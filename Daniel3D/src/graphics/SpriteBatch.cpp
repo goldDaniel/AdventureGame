@@ -28,6 +28,8 @@ static const std::string sVertexCode =
 "}";
 
 static const std::string sFragmentCode =
+"#version 330 core\n"
+
 "in vec3 Color;\n"
 "in vec2 Texcoord;\n"
 
