@@ -16,15 +16,15 @@ namespace dg3d
 
 				int numLines = 8;// must be equal to (number of lines in string - 1)
 				std::string map =
-					"xxxxxxxxxxxxxxxx\n"
-					"x..............x\n"
-					"x..............x\n"
-					"x..............x\n"
-					"x..............x\n"
-					"x..............x\n"
-					"x..............x\n"
-					"x..............x\n"
-					"xxxxxxxxxxxxxxxx";
+					"xxxxxxxxxxxxxxxxxxx\n"
+					"x.................x\n"
+					"x..xxx.....xxx....x\n"
+					"x....x.....x.....x\n"
+					"x....xx......x....x\n"
+					"x....x.......xx...x\n"
+					"x....xxxxxx.......x\n"
+					"x.................x\n"
+					"xxxxxxxxxxxxxxxxxxx";
 
 				std::istringstream stream(map);
 				std::string line;
@@ -34,7 +34,7 @@ namespace dg3d
 				{
 					for (size_t i = 0; i < line.length(); ++i)
 					{
-						glm::ivec2 pos = { glm::round(i - line.length() / 2.0f), glm::round(y) };
+						glm::ivec2 pos = { i - line.length() / 2.0f, y };
 						auto entity = registry.create();
 						entities[pos] = entity;
 

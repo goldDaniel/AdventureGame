@@ -41,20 +41,99 @@ namespace dg3d
 			}
 		}
 
-		namespace MovementSystem
-		{
-			void Update(float dt, entt::registry& registry) 
-			{
-				auto view = registry.view<PositionComponent, const VelocityComponent>();
-				view.each([dt](auto& pos, const auto& vel) 
-				{ 
-					pos.pos += vel.velocity * dt;
-				});
-			}
-		}
-
+		
 		namespace TilemapCollisionSystem
 		{
+			enum class CollisionSide
+			{
+				INVALID,
+
+				Left,
+				Right,
+				Top,
+				Bottom
+			}; 
+
+			CollisionSide getCollisionSide(const glm::vec4& r0, const glm::vec4& r1)
+			{
+				CollisionSide result = CollisionSide::INVALID;
+				//horizontal side
+				bool left = r0.x + r0.z / 2 < r1.x + r1.z / 2;
+				//vertical side
+				bool above = r0.y + r0.w / 2 > r1.y + r1.w / 2;
+
+				//holds how deep the r1ect is inside the tile on each axis
+				float horizontalDif = 0;
+				float verticalDif = 0;
+
+				//determine the differences for depth
+				if (left)
+				{
+					horizontalDif = r0.x + r0.z - r1.x;
+				}
+				else
+				{
+					horizontalDif = r1.x + r1.z - r0.x;
+				}
+
+				if (above)
+				{
+					verticalDif = r1.y + r1.w - r0.y;
+				}
+				else
+				{
+					verticalDif = r0.y + r0.w - r1.y;
+				}
+
+				if (horizontalDif < verticalDif)
+				{
+					if (left)
+					{
+						result = CollisionSide::Left;
+					}
+					else
+					{
+						result = CollisionSide::Right;
+					}
+				}
+				else if (above)
+				{
+					result = CollisionSide::Top;
+				}
+				else
+				{
+					result = CollisionSide::Bottom;
+				}
+
+				return result;
+			}
+
+			void ResolveCollision(PositionComponent& playerPos, const TilemapColliderComponent& collider, const const glm::vec2& tileMin, const glm::vec2& tileMax)
+			{
+				glm::vec2 diff = tileMax - tileMin;
+				glm::vec4 tileRect = { tileMin + diff / 2.0f, diff };
+				glm::vec4 playerRect = { playerPos.pos, collider.width, collider.height };
+
+				CollisionSide side = getCollisionSide(tileRect, playerRect);
+
+				if (side == CollisionSide::Top)
+				{
+					playerPos.pos.y = tileMin.y - collider.height / 2;
+				}
+				if (side == CollisionSide::Bottom)
+				{
+					playerPos.pos.y = tileMax.y + collider.height / 2;
+				}
+				if (side == CollisionSide::Right)
+				{
+					playerPos.pos.x = tileMin.x - collider.width / 2;
+				}
+				if (side == CollisionSide::Left)
+				{
+					playerPos.pos.x = tileMax.x + collider.width / 2;
+				}
+			}
+			
 			void CheckForTilemapCollisions(PositionComponent& playerPos, const TilemapColliderComponent& collider, entt::registry& registry)
 			{
 				std::vector<entt::entity> collisionTiles;
@@ -90,16 +169,15 @@ namespace dg3d
 						glm::vec2 playerMin = { playerPos.pos.x - 0.5f, playerPos.pos.y - 0.5f };
 						glm::vec2 playerMax = { playerPos.pos.x + 0.5f, playerPos.pos.y + 0.5f };
 
-						if (
-							(playerMin.x >= min.x && playerMin.x <= max.x ||
+						if ((playerMin.x >= min.x && playerMin.x <= max.x ||
 							 playerMax.x >= min.x && playerMax.x <= max.x)
 							&&
 							(playerMin.y >= min.y && playerMin.y <= max.y ||
 							 playerMax.y >= min.y && playerMax.y <= max.y))
 						{
 							
-							render.color = { 1, 0,0, 1 };
-							
+							render.color = { 1,0,0,1 };
+							ResolveCollision(playerPos, collider, min, max);
 						}
 						else
 						{
@@ -118,6 +196,19 @@ namespace dg3d
 				});
 			}
 		}
+
+		namespace MovementSystem
+		{
+			void Update(float dt, entt::registry& registry)
+			{
+				auto view = registry.view<PositionComponent, const VelocityComponent>();
+				view.each([dt](auto& pos, const auto& vel)
+				{
+					pos.pos += vel.velocity * dt;
+				});
+			}
+		}
+
 
 		namespace RenderSystem
 		{
