@@ -67,9 +67,10 @@ namespace dg3d
 		{
 			game::InputSystem::Update(dt, mRegistry, *input);
 			game::JumpSystem::Update(dt, mRegistry, *input);
+			game::MovementSystem::Update(dt, mRegistry);
 
 			game::GravitySystem::Update(dt, mRegistry);
-			game::MovementSystem::Update(dt, mRegistry);
+			game::DirectionSystem::Update(dt, mRegistry);
 		}
 
 		virtual void Render() override

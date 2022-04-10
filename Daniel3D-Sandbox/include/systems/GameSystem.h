@@ -136,7 +136,7 @@ namespace dg3d
 				return false;
 			}
 			
-			void CheckForTilemapCollisions(const entt::entity& player, PositionComponent& playerPos, VelocityComponent& vel, const TilemapColliderComponent& collider, entt::registry& registry, bool horizontal)
+			bool CheckForTilemapCollisions(const entt::entity& player, PositionComponent& playerPos, VelocityComponent& vel, const TilemapColliderComponent& collider, entt::registry& registry, bool horizontal)
 			{
 				std::vector<entt::entity> collisionTiles;
 				//gather collision tiles
@@ -181,7 +181,7 @@ namespace dg3d
 							render.color = { 1,0,0,1 };
 							if (ResolveCollision(player, playerPos, vel, collider, min, max, registry, horizontal))
 							{
-								return;
+								return true;
 							}
 						}
 						else
@@ -190,6 +190,7 @@ namespace dg3d
 						}
 					}
 				}
+				return false;
 			}
 
 			void Update(float dt, entt::registry& registry, bool horizontal)
@@ -197,7 +198,13 @@ namespace dg3d
 				auto view = registry.view < PositionComponent, VelocityComponent, const TilemapColliderComponent > ();
 				view.each([&registry, horizontal](auto entity, auto& pos, auto& vel, const auto& collider)
 				{
-					CheckForTilemapCollisions(entity, pos, vel, collider, registry, horizontal);
+					if (!CheckForTilemapCollisions(entity, pos, vel, collider, registry, horizontal))
+					{
+						if (!horizontal)
+						{
+							registry.remove<JumpComponent>(entity);
+						}
+					}
 				});
 			}
 		}
@@ -247,6 +254,20 @@ namespace dg3d
 					pos.pos.y += vel.velocity.y * dt;
 				});
 				game::TilemapCollisionSystem::Update(dt, registry, false);
+					
+			}
+		}
+
+		namespace DirectionSystem
+		{
+			void Update(float dt, entt::registry& registry)
+			{
+				auto view = registry.view<const VelocityComponent, RenderableComponent>();
+				view.each([dt](const auto& vel, auto& renderable)
+				{
+					if (vel.velocity.x < 0) renderable.facingRight = false;
+					if (vel.velocity.x > 0) renderable.facingRight = true;
+				});
 			}
 		}
 
@@ -263,7 +284,14 @@ namespace dg3d
 				view.each([&sb](const auto& position, const auto& renderable)
 				{
 					sb.SetColor(renderable.color);
-					sb.Draw(&renderable.texture, position.pos.x, position.pos.y, renderable.width, renderable.height);
+
+					float width = renderable.width;
+					if (!renderable.facingRight)
+					{
+						width = -width;
+					}
+
+					sb.Draw(&renderable.texture, position.pos.x, position.pos.y, width, renderable.height);
 				});
 				sb.End();
 			}

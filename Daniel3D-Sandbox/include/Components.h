@@ -19,12 +19,12 @@ namespace dg3d
 
 	struct JumpComponent
 	{
-		float strength = 6.0f;
+		float strength = 12.0f;
 	};
 
 	struct GravityComponent
 	{
-		float strength = -7.0f;
+		float strength = -19.0f;
 	};
 
 	struct TilemapColliderComponent
@@ -54,6 +54,8 @@ namespace dg3d
 		glm::vec4 color{ 1,1,1,1 };
 		float width = 1.0f;
 		float height = 1.0f;
+
+		bool facingRight = true;
 	};
 
 	struct DebugRenderableComponent
