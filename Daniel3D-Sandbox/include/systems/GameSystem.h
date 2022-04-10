@@ -15,32 +15,19 @@ namespace dg3d
 				auto view = registry.view<const InputConfigComponent, VelocityComponent>();
 				view.each([&input](const auto& config, auto& vel)
 				{
-					vel.velocity = { 0,0 };
+					vel.velocity.x = 0;
+					float speed = 4;
 					if (input.IsKeyDown(config.left))
 					{
-						vel.velocity.x -= 1;
+						vel.velocity.x -= speed;
 					}
 					if (input.IsKeyDown(config.right))
 					{
-						vel.velocity.x += 1;
-					}
-					if (input.IsKeyDown(config.down))
-					{
-						vel.velocity.y -= 1;
-					}
-					if (input.IsKeyDown(config.up))
-					{
-						vel.velocity.y += 1;
-					}
-					
-					if (glm::length(vel.velocity) > 0)
-					{
-						vel.velocity = glm::normalize(vel.velocity) * 4.0f;
+						vel.velocity.x += speed;
 					}
 				});
 			}
 		}
-
 		
 		namespace TilemapCollisionSystem
 		{
@@ -108,7 +95,7 @@ namespace dg3d
 				return result;
 			}
 
-			void ResolveCollision(PositionComponent& playerPos, const TilemapColliderComponent& collider, const const glm::vec2& tileMin, const glm::vec2& tileMax)
+			bool ResolveCollision(const entt::entity& player, PositionComponent& playerPos, VelocityComponent& vel, const TilemapColliderComponent& collider, const glm::vec2& tileMin, const glm::vec2& tileMax, entt::registry& registry, bool horizontal)
 			{
 				glm::vec2 diff = tileMax - tileMin;
 				glm::vec4 tileRect = { tileMin + diff / 2.0f, diff };
@@ -116,25 +103,40 @@ namespace dg3d
 
 				CollisionSide side = getCollisionSide(tileRect, playerRect);
 
-				if (side == CollisionSide::Top)
+				if (horizontal)
 				{
-					playerPos.pos.y = tileMin.y - collider.height / 2;
+					if (side == CollisionSide::Right)
+					{
+						playerPos.pos.x = tileMin.x - collider.width / 2;
+						return true;
+					}
+					if (side == CollisionSide::Left)
+					{
+						playerPos.pos.x = tileMax.x + collider.width / 2;
+						return true;
+					}
 				}
-				if (side == CollisionSide::Bottom)
+				else
 				{
-					playerPos.pos.y = tileMax.y + collider.height / 2;
+					if (side == CollisionSide::Top)
+					{
+						playerPos.pos.y = tileMin.y - collider.height / 2;
+						vel.velocity.y = 0;
+						return true;
+					}
+					if (side == CollisionSide::Bottom)
+					{
+						playerPos.pos.y = tileMax.y + collider.height / 2;
+						vel.velocity.y = 0;
+						registry.emplace_or_replace<JumpComponent>(player);
+						return true;
+					}
 				}
-				if (side == CollisionSide::Right)
-				{
-					playerPos.pos.x = tileMin.x - collider.width / 2;
-				}
-				if (side == CollisionSide::Left)
-				{
-					playerPos.pos.x = tileMax.x + collider.width / 2;
-				}
+
+				return false;
 			}
 			
-			void CheckForTilemapCollisions(PositionComponent& playerPos, const TilemapColliderComponent& collider, entt::registry& registry)
+			void CheckForTilemapCollisions(const entt::entity& player, PositionComponent& playerPos, VelocityComponent& vel, const TilemapColliderComponent& collider, entt::registry& registry, bool horizontal)
 			{
 				std::vector<entt::entity> collisionTiles;
 				//gather collision tiles
@@ -177,7 +179,10 @@ namespace dg3d
 						{
 							
 							render.color = { 1,0,0,1 };
-							ResolveCollision(playerPos, collider, min, max);
+							if (ResolveCollision(player, playerPos, vel, collider, min, max, registry, horizontal))
+							{
+								return;
+							}
 						}
 						else
 						{
@@ -187,14 +192,42 @@ namespace dg3d
 				}
 			}
 
-			void Update(float dt, entt::registry& registry)
+			void Update(float dt, entt::registry& registry, bool horizontal)
 			{
-				auto view = registry.view<PositionComponent, const TilemapColliderComponent>();
-				view.each([&registry](auto& pos, const auto& collider)
+				auto view = registry.view < PositionComponent, VelocityComponent, const TilemapColliderComponent > ();
+				view.each([&registry, horizontal](auto entity, auto& pos, auto& vel, const auto& collider)
 				{
-					CheckForTilemapCollisions(pos, collider, registry);
+					CheckForTilemapCollisions(entity, pos, vel, collider, registry, horizontal);
 				});
 			}
+		}
+
+		namespace JumpSystem
+		{
+			void Update(float dt, entt::registry& registry, const core::Input& input)
+			{
+				auto view = registry.view<VelocityComponent, const InputConfigComponent, const JumpComponent>();
+				view.each([&registry, &input](auto entity, auto& vel, const auto& config, const auto& jump)
+				{
+					if (input.IsKeyDown(config.jump))
+					{
+						vel.velocity.y = jump.strength;
+						registry.erase<JumpComponent>(entity);
+					}
+				});
+			}
+		}
+
+		namespace GravitySystem
+		{
+			void Update(float dt, entt::registry& registry)
+			{
+				auto view = registry.view<VelocityComponent, const GravityComponent>();
+				view.each([dt](auto& vel, const auto& gravity)
+				{
+					vel.velocity.y += gravity.strength * dt;
+				});
+			}	
 		}
 
 		namespace MovementSystem
@@ -204,11 +237,18 @@ namespace dg3d
 				auto view = registry.view<PositionComponent, const VelocityComponent>();
 				view.each([dt](auto& pos, const auto& vel)
 				{
-					pos.pos += vel.velocity * dt;
+					pos.pos.x += vel.velocity.x * dt;
 				});
+				game::TilemapCollisionSystem::Update(dt, registry, true);
+
+				view = registry.view<PositionComponent, const VelocityComponent>();
+				view.each([dt](auto& pos, const auto& vel)
+				{
+					pos.pos.y += vel.velocity.y * dt;
+				});
+				game::TilemapCollisionSystem::Update(dt, registry, false);
 			}
 		}
-
 
 		namespace RenderSystem
 		{

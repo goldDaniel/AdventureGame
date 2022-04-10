@@ -28,11 +28,11 @@ namespace dg3d
 				SDLK_a,
 				SDLK_d,
 				SDLK_w,
-				SDLK_s,
 			};
 			mRegistry.emplace<InputConfigComponent>(daniel, config);
 			mRegistry.emplace<PositionComponent>(daniel, glm::vec2{ 0, 0 });
 			mRegistry.emplace<VelocityComponent>(daniel, glm::vec2{ 0, 0 });
+			mRegistry.emplace<GravityComponent>(daniel);
 			mRegistry.emplace<TilemapColliderComponent>(daniel);
 			mRegistry.emplace<RenderableComponent>(daniel, mRenderer->CreateTexture2D("assets/textures/daniel.png"));
 
@@ -42,11 +42,11 @@ namespace dg3d
 				SDLK_LEFT,
 				SDLK_RIGHT,
 				SDLK_UP,
-				SDLK_DOWN,
 			};
 			mRegistry.emplace<InputConfigComponent>(kamilah, config);
 			mRegistry.emplace<PositionComponent>(kamilah, glm::vec2{ 0, 0 });
 			mRegistry.emplace<VelocityComponent>(kamilah, glm::vec2{ 0, 0 });
+			mRegistry.emplace<GravityComponent>(kamilah);
 			mRegistry.emplace<TilemapColliderComponent>(kamilah);
 			mRegistry.emplace<RenderableComponent>(kamilah, graphics::TextureRegion(mRenderer->CreateTexture2D("assets/textures/kamilah.png")));
 			mRegistry.emplace<DebugRenderableComponent>(kamilah, glm::vec4(1,1,1,1));
@@ -66,8 +66,10 @@ namespace dg3d
 		virtual void Update(float dt) override
 		{
 			game::InputSystem::Update(dt, mRegistry, *input);
+			game::JumpSystem::Update(dt, mRegistry, *input);
+
+			game::GravitySystem::Update(dt, mRegistry);
 			game::MovementSystem::Update(dt, mRegistry);
-			game::TilemapCollisionSystem::Update(dt, mRegistry);
 		}
 
 		virtual void Render() override

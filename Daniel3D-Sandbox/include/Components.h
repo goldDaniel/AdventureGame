@@ -8,14 +8,23 @@ namespace dg3d
 	{
 		SDL_KeyCode left;
 		SDL_KeyCode right;
-		SDL_KeyCode up;
-		SDL_KeyCode down;
+		SDL_KeyCode jump;
 	};
 
 	struct TilemapComponent
 	{
 		//ivec2 is storing the WORLD POSITION for the given tile
 		std::unordered_map<glm::ivec2, entt::entity> tileEntities;
+	};
+
+	struct JumpComponent
+	{
+		float strength = 6.0f;
+	};
+
+	struct GravityComponent
+	{
+		float strength = -7.0f;
 	};
 
 	struct TilemapColliderComponent
