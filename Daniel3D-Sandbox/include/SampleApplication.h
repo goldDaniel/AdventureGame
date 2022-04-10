@@ -3,6 +3,7 @@
 #include "systems/GameSystem.h"
 
 #include "TilemapImporter.h"
+#include <imgui/imgui.h>
 
 namespace dg3d
 {
@@ -32,6 +33,7 @@ namespace dg3d
 			mRegistry.emplace<InputConfigComponent>(daniel, config);
 			mRegistry.emplace<PositionComponent>(daniel, glm::vec2{ 0, 0 });
 			mRegistry.emplace<VelocityComponent>(daniel, glm::vec2{ 0, 0 });
+			mRegistry.emplace<JumpComponent>(daniel);
 			mRegistry.emplace<GravityComponent>(daniel);
 			mRegistry.emplace<TilemapColliderComponent>(daniel);
 			mRegistry.emplace<RenderableComponent>(daniel, mRenderer->CreateTexture2D("assets/textures/daniel.png"));
@@ -47,6 +49,7 @@ namespace dg3d
 			mRegistry.emplace<PositionComponent>(kamilah, glm::vec2{ 0, 0 });
 			mRegistry.emplace<VelocityComponent>(kamilah, glm::vec2{ 0, 0 });
 			mRegistry.emplace<GravityComponent>(kamilah);
+			mRegistry.emplace<JumpComponent>(kamilah);
 			mRegistry.emplace<TilemapColliderComponent>(kamilah);
 			mRegistry.emplace<RenderableComponent>(kamilah, graphics::TextureRegion(mRenderer->CreateTexture2D("assets/textures/kamilah.png")));
 			mRegistry.emplace<DebugRenderableComponent>(kamilah, glm::vec4(1,1,1,1));
@@ -65,6 +68,10 @@ namespace dg3d
 
 		virtual void Update(float dt) override
 		{
+			ImGui::ShowDemoWindow();
+
+			if (dt > 1.0f / 30.0f) dt = 1.0f / 30.0f;
+
 			game::InputSystem::Update(dt, mRegistry, *input);
 			game::JumpSystem::Update(dt, mRegistry, *input);
 			game::MovementSystem::Update(dt, mRegistry);

@@ -6,6 +6,8 @@
 #include <functional>
 #include <unordered_map>
 
+#include <imgui/imgui_impl_sdl.h>
+
 namespace dg3d
 {
 	namespace core
@@ -43,6 +45,7 @@ namespace dg3d
                 SDL_Event event;
                 while (SDL_PollEvent(&event))
                 {
+                    ImGui_ImplSDL2_ProcessEvent(&event);
 
                     switch (event.type)
                     {

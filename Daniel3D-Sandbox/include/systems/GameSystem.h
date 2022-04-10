@@ -128,7 +128,10 @@ namespace dg3d
 					{
 						playerPos.pos.y = tileMax.y + collider.height / 2;
 						vel.velocity.y = 0;
-						registry.emplace_or_replace<JumpComponent>(player);
+						if (auto jump = registry.try_get<JumpComponent>(player))
+						{
+							jump->canJump = true;
+						}
 						return true;
 					}
 				}
@@ -202,7 +205,10 @@ namespace dg3d
 					{
 						if (!horizontal)
 						{
-							registry.remove<JumpComponent>(entity);
+							if (auto jump = registry.try_get<JumpComponent>(entity))
+							{
+								jump->canJump = false;
+							}
 						}
 					}
 				});
@@ -213,13 +219,13 @@ namespace dg3d
 		{
 			void Update(float dt, entt::registry& registry, const core::Input& input)
 			{
-				auto view = registry.view<VelocityComponent, const InputConfigComponent, const JumpComponent>();
-				view.each([&registry, &input](auto entity, auto& vel, const auto& config, const auto& jump)
+				auto view = registry.view<VelocityComponent, const InputConfigComponent, JumpComponent>();
+				view.each([&registry, &input](auto entity, auto& vel, const auto& config, auto& jump)
 				{
-					if (input.IsKeyDown(config.jump))
+					if (input.IsKeyDown(config.jump) && jump.canJump)
 					{
 						vel.velocity.y = jump.strength;
-						registry.erase<JumpComponent>(entity);
+						jump.canJump = false;
 					}
 				});
 			}

@@ -4,6 +4,10 @@
 #include <iostream>
 #include <glad/glad.h>
 
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl.h>
+#include <imgui/imgui_impl_opengl3.h>
+
 using namespace dg3d::core;
 
 void Application::InitializeWindow(const std::string& title, int windowW, int windowH)
@@ -40,6 +44,15 @@ void Application::InitializeWindow(const std::string& title, int windowW, int wi
         << "Renderer: " << glGetString(GL_RENDERER) << "\n"
         << "Version:  " << glGetString(GL_VERSION) << "\n"
         << std::endl;
+
+    
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplSDL2_InitForOpenGL(mWindow, mGLContext);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
+    ImGui::GetStyle().ScaleAllSizes(1.5f);
 }
 
 Application::Application(const std::string& title, int width, int height)
@@ -57,6 +70,10 @@ Application::Application(const std::string& title, int width, int height)
 
 Application::~Application()
 {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+
     SDL_GL_DeleteContext(mGLContext);
     SDL_DestroyWindow(mWindow);
     SDL_Quit();
@@ -75,10 +92,16 @@ void Application::Run()
 
         SDL_GetWindowSize(mWindow, &mScreenWidth, &mScreenHeight);
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame(mWindow);
+        ImGui::NewFrame();
+
         input->Update();
         Update(dt);        
         Render();
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(mWindow);
     }
 }

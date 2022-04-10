@@ -19,6 +19,7 @@ namespace dg3d
 
 	struct JumpComponent
 	{
+		bool canJump = false;
 		float strength = 12.0f;
 	};
 
