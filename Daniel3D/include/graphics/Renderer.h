@@ -34,6 +34,9 @@ namespace dg3d
 			Texture* const CreateTexture2D(const std::string& filepath);
 
 		private:
+
+			void CreateDebugTexture();
+
 			bool render_wireframes = false;
 
 			std::vector<std::unique_ptr<Renderable>> renderables;

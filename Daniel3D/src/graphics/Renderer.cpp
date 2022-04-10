@@ -8,6 +8,8 @@ Renderer::Renderer()
 	glClearColor(0, 0, 0, 1);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	CreateDebugTexture();
 }
 
 Renderer::~Renderer()
@@ -15,6 +17,22 @@ Renderer::~Renderer()
 	index_buffers.clear();
 	vertex_arrays.clear();
 	shaders.clear();
+}
+
+void Renderer::CreateDebugTexture()
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+
+	GLubyte texData[] = { 255, 255, 255, 255 };
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+	textures["debug"] = std::unique_ptr<Texture>(new Texture(textureID, 1, 1));
 }
 
 void Renderer::SetClearColor(const glm::vec4& color)

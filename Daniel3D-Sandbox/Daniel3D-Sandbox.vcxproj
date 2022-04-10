@@ -146,9 +146,11 @@
     <ClCompile Include="src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Common.h" />
     <ClInclude Include="include\Components.h" />
     <ClInclude Include="include\SampleApplication.h" />
     <ClInclude Include="include\systems\GameSystem.h" />
+    <ClInclude Include="include\TilemapImporter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\simple.frag.glsl">

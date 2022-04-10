@@ -1,9 +1,8 @@
-#include <core/Application.h>
-
-#include <graphics/SpriteBatch.h>
-#include <graphics/Renderer.h>
+#include "Common.h"
 
 #include "systems/GameSystem.h"
+
+#include "TilemapImporter.h"
 
 namespace dg3d
 {
@@ -11,6 +10,7 @@ namespace dg3d
 	{
 		std::unique_ptr<graphics::Renderer> mRenderer;
 		std::unique_ptr<graphics::SpriteBatch> mSpriteBatch;
+		std::unique_ptr<graphics::ShapeRenderer> mShapeRenderer;
 		entt::registry mRegistry;
 
 	public:
@@ -18,6 +18,7 @@ namespace dg3d
 			: Application::Application(title, w, h) 
 		{
 			mRenderer = std::make_unique<graphics::Renderer>();
+			mShapeRenderer  = std::make_unique<graphics::ShapeRenderer>();
 			mSpriteBatch = std::make_unique<graphics::SpriteBatch>();
 			mRenderer->SetClearColor({ 0.2f, 0.4f, 0.3f, 1.0f });
 
@@ -32,6 +33,7 @@ namespace dg3d
 			mRegistry.emplace<InputConfigComponent>(daniel, config);
 			mRegistry.emplace<PositionComponent>(daniel, glm::vec2{ 0, 0 });
 			mRegistry.emplace<VelocityComponent>(daniel, glm::vec2{ 0, 0 });
+			mRegistry.emplace<TilemapColliderComponent>(daniel);
 			mRegistry.emplace<RenderableComponent>(daniel, mRenderer->CreateTexture2D("assets/textures/daniel.png"));
 
 			auto kamilah = mRegistry.create();
@@ -45,7 +47,13 @@ namespace dg3d
 			mRegistry.emplace<InputConfigComponent>(kamilah, config);
 			mRegistry.emplace<PositionComponent>(kamilah, glm::vec2{ 0, 0 });
 			mRegistry.emplace<VelocityComponent>(kamilah, glm::vec2{ 0, 0 });
+			mRegistry.emplace<TilemapColliderComponent>(kamilah);
 			mRegistry.emplace<RenderableComponent>(kamilah, graphics::TextureRegion(mRenderer->CreateTexture2D("assets/textures/kamilah.png")));
+			mRegistry.emplace<DebugRenderableComponent>(kamilah, glm::vec4(1,1,1,1));
+
+			game::tilemap::Create(mRegistry, [this]() {
+				return mRenderer->CreateTexture2D("debug");
+			});
 		}
 
 		virtual ~SampleApplication()
@@ -59,6 +67,7 @@ namespace dg3d
 		{
 			game::InputSystem::Update(dt, mRegistry, *input);
 			game::MovementSystem::Update(dt, mRegistry);
+			game::TilemapCollisionSystem::Update(dt, mRegistry);
 		}
 
 		virtual void Render() override
@@ -68,6 +77,7 @@ namespace dg3d
 
 			float aspect = mScreenWidth / static_cast<float>(mScreenHeight);
 			game::RenderSystem::Update(mRegistry, *mSpriteBatch, aspect);
+			game::DebugRenderSystem::Update(mRegistry, *mShapeRenderer, aspect);
 		}
 	};
 }
