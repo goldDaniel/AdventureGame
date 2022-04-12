@@ -17,6 +17,10 @@ namespace dg3d
 		private:
 			SDL_Window* mWindow;
 			SDL_GLContext mGLContext;
+
+			float mTime;
+			float mAccumulator;
+
 			bool mRunning;
 
 		protected:

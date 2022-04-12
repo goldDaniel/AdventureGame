@@ -35,29 +35,22 @@ namespace dg3d
 					for (size_t i = 0; i < line.length(); ++i)
 					{
 						glm::ivec2 pos = { i - line.length() / 2.0f, y };
-						auto entity = registry.create();
-						entities[pos] = entity;
+						entities[pos] = registry.create();
 
-						registry.emplace<PositionComponent>(entity, glm::vec2{ pos.x, pos.y } );
+						registry.emplace<PositionComponent>(entities[pos], glm::vec2{ pos.x, pos.y } );
 
 						bool isSolid = false;
 						if (line[i] == 'x')
 						{
 							isSolid = true;
-							registry.emplace<RenderableComponent>(entity, graphics::TextureRegion(isSolidTextureCallback()), glm::vec4{ 0.3, 0.2f, 0.5f, 1.0f });
-							registry.emplace<DebugRenderableComponent>(entity,
-								glm::vec4{ 0, 0, 0, 1.0f });
+							registry.emplace<RenderableComponent>(entities[pos], graphics::TextureRegion(isSolidTextureCallback()), glm::vec4{ 0.3, 0.2f, 0.5f, 1.0f });
 						}
 						if (line[i] == '.')
 						{
 							isSolid = false;
-							registry.emplace<DebugRenderableComponent>(entity,
-								glm::vec4{ 0.5, 0.3f, 0.8f, 1.0f });
 						}
 
-
-
-						registry.emplace<TilemapTileComponent>(entity, isSolid);
+						registry.emplace<TilemapTileComponent>(entities[pos], isSolid);
 					}
 					y--;
 				}

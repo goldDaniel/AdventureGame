@@ -59,6 +59,8 @@ Application::Application(const std::string& title, int width, int height)
     : mTitle(title)
     , mScreenWidth(width)
     , mScreenHeight(height)
+    , mTime(0)
+    , mAccumulator(0)
     , mRunning(false)
 {
     InitializeWindow(title, width, height);
@@ -83,21 +85,32 @@ void Application::Run()
 {
     mRunning = true;
     uint32_t prevTime = SDL_GetTicks();
+    float step = 1.0f / 60.0f;
 
     while (mRunning)
     {
         uint32_t currTime = SDL_GetTicks();
-        float dt = static_cast<float>(currTime - prevTime) / 1000.f;
+        float frameTime = static_cast<float>(currTime - prevTime) / 1000.f;
         prevTime = currTime;
+        
+        mAccumulator += frameTime;
 
-        SDL_GetWindowSize(mWindow, &mScreenWidth, &mScreenHeight);
-
+        
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame(mWindow);
         ImGui::NewFrame();
 
-        input->Update();
-        Update(dt);        
+
+        while (mAccumulator >= step)
+        {
+            input->Update();
+            Update(step);
+            
+            mAccumulator -= step;
+            mTime += step;
+        }
+
+        SDL_GetWindowSize(mWindow, &mScreenWidth, &mScreenHeight);
         Render();
 
         ImGui::Render();

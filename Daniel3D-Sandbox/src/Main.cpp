@@ -4,7 +4,7 @@
 
 int main()
 {
-    auto app = std::make_unique<dg3d::SampleApplication>("Hello App", 800, 600);
+    auto app = std::make_unique<dg3d::SampleApplication>("Adventure Game", 1024, 768);
     app->Run();
 
     exit(EXIT_SUCCESS);

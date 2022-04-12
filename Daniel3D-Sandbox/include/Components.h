@@ -25,7 +25,7 @@ namespace dg3d
 
 	struct GravityComponent
 	{
-		float strength = -19.0f;
+		float strength = -24.0f;
 	};
 
 	struct TilemapColliderComponent
