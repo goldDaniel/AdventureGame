@@ -165,7 +165,6 @@ namespace dg3d
 				{
 					auto& position = registry.get<PositionComponent>(entity);
 					auto& tile = registry.get<TilemapTileComponent>(entity);
-					auto& render = registry.get<DebugRenderableComponent>(entity);
 					if (tile.isSolid)
 					{
 						glm::vec2 min = { position.pos.x - 0.5f, position.pos.y - 0.5f };
@@ -180,16 +179,10 @@ namespace dg3d
 							(playerMin.y >= min.y && playerMin.y <= max.y ||
 							 playerMax.y >= min.y && playerMax.y <= max.y))
 						{
-							
-							render.color = { 1,0,0,1 };
 							if (ResolveCollision(player, playerPos, vel, collider, min, max, registry, horizontal))
 							{
 								return true;
 							}
-						}
-						else
-						{
-							render.color = { 0, 0, 0, 1 };
 						}
 					}
 				}
