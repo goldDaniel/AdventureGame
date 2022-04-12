@@ -37,8 +37,8 @@ namespace dg3d
 			void Run();
 
 		protected:
-			virtual void Render() = 0;
 			virtual void Update(float delta) = 0;
+			virtual void Render(float alpha) = 0;
 
 		private:
 			void InitializeWindow(const std::string& title, int width, int height);

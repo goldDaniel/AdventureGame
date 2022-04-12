@@ -272,16 +272,27 @@ namespace dg3d
 
 		namespace RenderSystem
 		{
-			void Update(entt::registry& registry, graphics::SpriteBatch& sb, float aspect)
+			void Update(entt::registry& registry, graphics::SpriteBatch& sb, float aspect, float alpha)
 			{
-				auto view = registry.view<const PositionComponent, const RenderableComponent>();
+				static std::unordered_map<entt::entity, glm::vec2> previousPos;
+				static std::vector<entt::entity> toKeep;
 
 				auto proj = glm::perspective(65.0f, aspect, 0.001f, 10.0f);
 				auto viewMat = glm::lookAt(glm::vec3{ 0,0,3 }, { 0,0,0 }, { 0,1,0 });
 
+				
+				auto view = registry.view<const PositionComponent, const RenderableComponent>();
 				sb.Begin(proj, viewMat);
-				view.each([&sb](const auto& position, const auto& renderable)
+				view.each([&alpha, &sb](auto entity, const auto& position, const auto& renderable)
 				{
+					glm::vec2 renderPos = position.pos;
+					if(previousPos.find(entity) != previousPos.end())
+					{
+						glm::vec2 prev = previousPos[entity];
+						renderPos = renderPos * alpha + prev * (1.0f - alpha);
+					}
+					toKeep.push_back(entity);
+
 					sb.SetColor(renderable.color);
 
 					float width = renderable.width;
@@ -293,6 +304,13 @@ namespace dg3d
 					sb.Draw(&renderable.texture, position.pos.x, position.pos.y, width, renderable.height);
 				});
 				sb.End();
+
+				previousPos.clear();
+				for (auto entity : toKeep)
+				{
+					previousPos[entity] = registry.get<PositionComponent>(entity).pos;
+				}
+				toKeep.clear();
 			}
 		}
 

@@ -12,6 +12,7 @@ namespace dg3d
 		std::unique_ptr<graphics::Renderer> mRenderer;
 		std::unique_ptr<graphics::SpriteBatch> mSpriteBatch;
 		std::unique_ptr<graphics::ShapeRenderer> mShapeRenderer;
+		
 		entt::registry mRegistry;
 
 	public:
@@ -68,10 +69,6 @@ namespace dg3d
 
 		virtual void Update(float dt) override
 		{
-			ImGui::ShowDemoWindow();
-
-			if (dt > 1.0f / 30.0f) dt = 1.0f / 30.0f;
-
 			game::InputSystem::Update(dt, mRegistry, *input);
 			game::JumpSystem::Update(dt, mRegistry, *input);
 			game::MovementSystem::Update(dt, mRegistry);
@@ -80,13 +77,13 @@ namespace dg3d
 			game::DirectionSystem::Update(dt, mRegistry);
 		}
 
-		virtual void Render() override
+		virtual void Render(float alpha) override
 		{
 			mRenderer->UpdateViewport(mScreenWidth, mScreenHeight);
 			mRenderer->Clear();
 
 			float aspect = mScreenWidth / static_cast<float>(mScreenHeight);
-			game::RenderSystem::Update(mRegistry, *mSpriteBatch, aspect);
+			game::RenderSystem::Update(mRegistry, *mSpriteBatch, aspect, alpha);
 			game::DebugRenderSystem::Update(mRegistry, *mShapeRenderer, aspect);
 		}
 	};

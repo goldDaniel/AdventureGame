@@ -100,7 +100,6 @@ void Application::Run()
         ImGui_ImplSDL2_NewFrame(mWindow);
         ImGui::NewFrame();
 
-
         while (mAccumulator >= step)
         {
             input->Update();
@@ -110,8 +109,10 @@ void Application::Run()
             mTime += step;
         }
 
+        const float alpha = mAccumulator / step;
+
         SDL_GetWindowSize(mWindow, &mScreenWidth, &mScreenHeight);
-        Render();
+        Render(alpha);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

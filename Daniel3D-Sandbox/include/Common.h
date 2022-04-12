@@ -18,6 +18,7 @@
 #include <graphics/Texture.h>
 #include <graphics/TextureRegion.h>
 
+#include <algorithm>
 #include <vector>
 #include <unordered_map>
 #include <iostream>
