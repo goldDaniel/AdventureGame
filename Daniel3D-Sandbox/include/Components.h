@@ -49,6 +49,12 @@ namespace dg3d
 		glm::vec2 velocity{ 0,0 };
 	};
 
+	struct CameraComponent
+	{
+		glm::vec2 position;
+		float zoom = 3;
+	};
+
 	struct RenderableComponent
 	{
 		graphics::TextureRegion texture;

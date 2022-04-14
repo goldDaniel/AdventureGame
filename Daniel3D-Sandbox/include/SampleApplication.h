@@ -22,48 +22,19 @@ namespace dg3d
 			mRenderer = std::make_unique<graphics::Renderer>();
 			mShapeRenderer  = std::make_unique<graphics::ShapeRenderer>();
 			mSpriteBatch = std::make_unique<graphics::SpriteBatch>();
-			mRenderer->SetClearColor({ 0.2f, 0.4f, 0.3f, 1.0f });
+			mRenderer->SetClearColor({ 0.7f, 0.6f, 0.5f, 1.0f });
+			
+			auto cam = mRegistry.create();
+			mRegistry.emplace<CameraComponent>(cam);
 
-			auto daniel = mRegistry.create();
-			InputConfigComponent config =
-			{
-				SDLK_a,
-				SDLK_d,
-				SDLK_w,
-			};
-			mRegistry.emplace<InputConfigComponent>(daniel, config);
-			mRegistry.emplace<PositionComponent>(daniel, glm::vec2{ 0, 0 });
-			mRegistry.emplace<VelocityComponent>(daniel, glm::vec2{ 0, 0 });
-			mRegistry.emplace<JumpComponent>(daniel);
-			mRegistry.emplace<GravityComponent>(daniel);
-			mRegistry.emplace<TilemapColliderComponent>(daniel);
-			mRegistry.emplace<RenderableComponent>(daniel, mRenderer->CreateTexture2D("assets/textures/daniel.png"));
 
-			auto kamilah = mRegistry.create();
-			config =
-			{
-				SDLK_LEFT,
-				SDLK_RIGHT,
-				SDLK_UP,
-			};
-			mRegistry.emplace<InputConfigComponent>(kamilah, config);
-			mRegistry.emplace<PositionComponent>(kamilah, glm::vec2{ 0, 0 });
-			mRegistry.emplace<VelocityComponent>(kamilah, glm::vec2{ 0, 0 });
-			mRegistry.emplace<GravityComponent>(kamilah);
-			mRegistry.emplace<JumpComponent>(kamilah);
-			mRegistry.emplace<TilemapColliderComponent>(kamilah);
-			mRegistry.emplace<RenderableComponent>(kamilah, graphics::TextureRegion(mRenderer->CreateTexture2D("assets/textures/kamilah.png")));
-			mRegistry.emplace<DebugRenderableComponent>(kamilah, glm::vec4(1,1,1,1));
-
-			game::tilemap::Create(mRegistry, [this]() {
-				return mRenderer->CreateTexture2D("debug");
-			});
+			game::tilemap::Create(mRegistry, *mRenderer);
 		}
 
 		virtual ~SampleApplication()
 		{
 
-		}
+		} 
 		
 	protected:
 
@@ -75,6 +46,8 @@ namespace dg3d
 
 			game::GravitySystem::Update(dt, mRegistry);
 			game::DirectionSystem::Update(dt, mRegistry);
+
+			game::CameraSystem::Update(mRegistry, dt, *input);
 		}
 
 		virtual void Render(float alpha) override
@@ -82,9 +55,15 @@ namespace dg3d
 			mRenderer->UpdateViewport(mScreenWidth, mScreenHeight);
 			mRenderer->Clear();
 
+			mSpriteBatch->Begin(glm::mat4(1.0f), glm::mat4(1.0f));
+			mSpriteBatch->Draw(mRenderer->CreateTexture2D("assets/textures/background.png"), 0, 0, 2, 2);
+			mSpriteBatch->End();
+
 			float aspect = mScreenWidth / static_cast<float>(mScreenHeight);
 			game::RenderSystem::Update(mRegistry, *mSpriteBatch, aspect, alpha);
 			game::DebugRenderSystem::Update(mRegistry, *mShapeRenderer, aspect);
+
+			
 		}
 	};
 }

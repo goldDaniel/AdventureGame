@@ -270,15 +270,70 @@ namespace dg3d
 			}
 		}
 
-		namespace RenderSystem
+		namespace CameraSystem
 		{
+			void Update(entt::registry& registry, float dt, const core::Input& input)
+			{
+				auto view = registry.view<CameraComponent>();
+				view.each([&dt, &input](auto& cam)
+				{
+					if (input.IsKeyDown(SDLK_j))
+					{
+						cam.position.x -= 2 * dt;
+					}
+					if (input.IsKeyDown(SDLK_l))
+					{
+						cam.position.x += 2 * dt;
+					}
+					if (input.IsKeyDown(SDLK_k))
+					{
+						cam.position.y -= 2 * dt;
+					}
+					if (input.IsKeyDown(SDLK_i))
+					{
+						cam.position.y += 2 * dt;
+					}
+
+					if (input.IsKeyDown(SDLK_EQUALS))
+					{
+						cam.zoom += 0.25f * dt;
+					}
+					if (input.IsKeyDown(SDLK_MINUS))
+					{
+						cam.zoom -= 0.25f * dt;
+					}
+				});
+			}
+
+			glm::mat4 GetProjectionMatrix(float aspect)
+			{
+				auto proj = glm::perspective(65.0f, aspect, 0.001f, 10.0f);
+				return proj;
+			}
+
+			glm::mat4 GetViewMatrix(entt::registry& registry)
+			{
+				glm::mat4 result(1.0f);
+
+				auto view = registry.view<CameraComponent>();
+				view.each([&result](const auto& cam)
+				{
+					result = glm::lookAt(glm::vec3{ cam.position, cam.zoom }, { cam.position, 0 }, { 0,1,0 });
+				});
+
+				return result;
+			}
+		}
+
+		namespace RenderSystem
+		{ 
 			void Update(entt::registry& registry, graphics::SpriteBatch& sb, float aspect, float alpha)
 			{
 				static std::unordered_map<entt::entity, glm::vec2> previousPos;
 				static std::vector<entt::entity> toKeep;
 
-				auto proj = glm::perspective(65.0f, aspect, 0.001f, 10.0f);
-				auto viewMat = glm::lookAt(glm::vec3{ 0,0,3 }, { 0,0,0 }, { 0,1,0 });
+				auto proj = CameraSystem::GetProjectionMatrix(aspect);
+				auto viewMat = CameraSystem::GetViewMatrix(registry);
 
 				
 				auto view = registry.view<const PositionComponent, const RenderableComponent>();
@@ -320,8 +375,8 @@ namespace dg3d
 			{
 				auto view = registry.view<const PositionComponent, const DebugRenderableComponent>();
 
-				auto proj = glm::perspective(65.0f, aspect, 0.001f, 10.0f);
-				auto viewMat = glm::lookAt(glm::vec3{ 0,0,3 }, { 0,0,0 }, { 0,1,0 });
+				auto proj = CameraSystem::GetProjectionMatrix(aspect);
+				auto viewMat = CameraSystem::GetViewMatrix(registry);
 
 				s.Begin(proj, viewMat);
 				view.each([&s](const auto& position, const auto& renderable)

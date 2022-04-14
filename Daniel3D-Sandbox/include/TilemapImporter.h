@@ -10,21 +10,25 @@ namespace dg3d
 	{
 		namespace tilemap
 		{
-			std::unordered_map<glm::ivec2, entt::entity> CreateTiles(entt::registry& registry, std::function<graphics::Texture* (void)> isSolidTextureCallback)
+			std::unordered_map<glm::ivec2, entt::entity> CreateTiles(entt::registry& registry, graphics::Renderer& renderer)
 			{
 				std::unordered_map<glm::ivec2, entt::entity> entities;
 
 				int numLines = 8;// must be equal to (number of lines in string - 1)
 				std::string map =
-					"xxxxxxxxxxxxxxxxxxx\n"
-					"x.................x\n"
-					"x..xxx.....xxx....x\n"
-					"x....x.....x.....x\n"
-					"x....xx......x....x\n"
-					"x....x.......xx...x\n"
-					"x....xxxxxx.......x\n"
-					"x.................x\n"
-					"xxxxxxxxxxxxxxxxxxx";
+					"................................................x\n"
+					"................................................x\n"
+					".dk.............................................x\n"
+					"....................xxxx........................x\n"
+					".......................x...b....................x\n"
+					".......................xxxxxxx..................x\n"
+					"...............xxx.....x......x.................x\n"
+					".......................x.......x................x\n"
+					".......................x.c......x...............x\n"
+					"..........xxx..........xxxx......x......f.......x\n"
+					".......................x...............xxx......x\n"
+					".......................x........................x\n"
+					"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 				std::istringstream stream(map);
 				std::string line;
@@ -35,31 +39,80 @@ namespace dg3d
 					for (size_t i = 0; i < line.length(); ++i)
 					{
 						glm::ivec2 pos = { i - line.length() / 2.0f, y };
-						entities[pos] = registry.create();
+						
 
-						registry.emplace<PositionComponent>(entities[pos], glm::vec2{ pos.x, pos.y } );
-
-						bool isSolid = false;
 						if (line[i] == 'x')
 						{
-							isSolid = true;
-							registry.emplace<RenderableComponent>(entities[pos], graphics::TextureRegion(isSolidTextureCallback()), glm::vec4{ 0.3, 0.2f, 0.5f, 1.0f });
+							entities[pos] = registry.create();
+							registry.emplace<PositionComponent>(entities[pos], glm::vec2{ pos.x, pos.y });
+							bool isSolid = true;
+							registry.emplace<RenderableComponent>(entities[pos], graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/tile_grass.png")));
+							registry.emplace<TilemapTileComponent>(entities[pos], isSolid);
 						}
-						if (line[i] == '.')
+						if (line[i] == 'b')
 						{
-							isSolid = false;
+							auto blob = registry.create();
+							registry.emplace<PositionComponent>(blob, pos);
+							registry.emplace<VelocityComponent>(blob, glm::vec2{ 0, 0 });
+							registry.emplace<GravityComponent>(blob);
+							registry.emplace<TilemapColliderComponent>(blob);
+							registry.emplace<RenderableComponent>(blob, graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/blob2.png")));
 						}
-
-						registry.emplace<TilemapTileComponent>(entities[pos], isSolid);
+						if (line[i] == 'f')
+						{
+							auto fire = registry.create();
+							registry.emplace<PositionComponent>(fire, pos);
+							registry.emplace<RenderableComponent>(fire, graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/fire1.png")));
+						}
+						if (line[i] == 'c')
+						{
+							auto chest = registry.create();
+							registry.emplace<PositionComponent>(chest, pos);
+							registry.emplace<RenderableComponent>(chest, graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/chest1.png")));
+						}
+						if (line[i] == 'd')
+						{
+							auto daniel = registry.create();
+							InputConfigComponent config =
+							{
+								SDLK_a,
+								SDLK_d,
+								SDLK_w,
+							};
+							registry.emplace<InputConfigComponent>(daniel, config);
+							registry.emplace<PositionComponent>(daniel, glm::vec2{ 0, 0 });
+							registry.emplace<VelocityComponent>(daniel, glm::vec2{ 0, 0 });
+							registry.emplace<JumpComponent>(daniel);
+							registry.emplace<GravityComponent>(daniel);
+							registry.emplace<TilemapColliderComponent>(daniel);
+							registry.emplace<RenderableComponent>(daniel, graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/daniel.png")));
+						}
+						if (line[i] == 'k')
+						{
+							auto kamilah = registry.create();
+							InputConfigComponent config =
+							{
+								SDLK_LEFT,
+								SDLK_RIGHT,
+								SDLK_UP,
+							};
+							registry.emplace<InputConfigComponent>(kamilah, config);
+							registry.emplace<PositionComponent>(kamilah, glm::vec2{ 0, 0 });
+							registry.emplace<VelocityComponent>(kamilah, glm::vec2{ 0, 0 });
+							registry.emplace<GravityComponent>(kamilah);
+							registry.emplace<JumpComponent>(kamilah);
+							registry.emplace<TilemapColliderComponent>(kamilah);
+							registry.emplace<RenderableComponent>(kamilah, graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/kamilah.png")));
+						}
 					}
 					y--;
 				}
 				return entities;
 			}
 
-			void Create(entt::registry& registry, std::function<graphics::Texture*(void)> isSolidTextureCallback)
+			void Create(entt::registry& registry, graphics::Renderer& renderer)
 			{
-				auto tiles = CreateTiles(registry, isSolidTextureCallback);
+				auto tiles = CreateTiles(registry, renderer);
 
 				auto tilemapEntity = registry.create();
 				TilemapComponent tilemap = { tiles };
