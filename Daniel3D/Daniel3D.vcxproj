@@ -168,6 +168,7 @@
     <ClInclude Include="include\core\Input.h" />
     <ClInclude Include="include\entt\entt.hpp" />
     <ClInclude Include="include\glad\glad.h" />
+    <ClInclude Include="include\graphics\Animation.h" />
     <ClInclude Include="include\graphics\IndexBuffer.h" />
     <ClInclude Include="include\graphics\Renderable.h" />
     <ClInclude Include="include\graphics\Renderer.h" />

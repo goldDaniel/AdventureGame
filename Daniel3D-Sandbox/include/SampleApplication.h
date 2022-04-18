@@ -12,30 +12,28 @@ namespace dg3d
 		std::unique_ptr<graphics::Renderer> mRenderer;
 		std::unique_ptr<graphics::SpriteBatch> mSpriteBatch;
 		std::unique_ptr<graphics::ShapeRenderer> mShapeRenderer;
-		
+
 		entt::registry mRegistry;
 
 	public:
 		SampleApplication(const std::string& title, int w, int h)
-			: Application::Application(title, w, h) 
+			: Application::Application(title, w, h)
 		{
 			mRenderer = std::make_unique<graphics::Renderer>();
-			mShapeRenderer  = std::make_unique<graphics::ShapeRenderer>();
+			mShapeRenderer = std::make_unique<graphics::ShapeRenderer>();
 			mSpriteBatch = std::make_unique<graphics::SpriteBatch>();
+
 			mRenderer->SetClearColor({ 0.7f, 0.6f, 0.5f, 1.0f });
-			
-			auto cam = mRegistry.create();
-			mRegistry.emplace<CameraComponent>(cam);
 
-
+			mRegistry.emplace<CameraComponent>(mRegistry.create());
 			game::tilemap::Create(mRegistry, *mRenderer);
 		}
 
 		virtual ~SampleApplication()
 		{
 
-		} 
-		
+		}
+
 	protected:
 
 		virtual void Update(float dt) override
@@ -47,11 +45,18 @@ namespace dg3d
 			game::GravitySystem::Update(dt, mRegistry);
 			game::DirectionSystem::Update(dt, mRegistry);
 
-			game::CameraSystem::Update(mRegistry, dt, *input);
+			game::CameraFollowSystem::Update(mRegistry, dt);
+
+			game::AnimationSystem::Update(mRegistry, dt);
 		}
 
 		virtual void Render(float alpha) override
 		{
+			float aspect = static_cast<float>(mScreenWidth) / mScreenHeight;
+			mRegistry.view<CameraComponent>().each([aspect](auto& camera)
+			{
+				camera.proj = glm::perspective(65.0f, aspect, 0.001f, 10.f);
+			});
 			mRenderer->UpdateViewport(mScreenWidth, mScreenHeight);
 			mRenderer->Clear();
 
@@ -59,11 +64,8 @@ namespace dg3d
 			mSpriteBatch->Draw(mRenderer->CreateTexture2D("assets/textures/background.png"), 0, 0, 2, 2);
 			mSpriteBatch->End();
 
-			float aspect = mScreenWidth / static_cast<float>(mScreenHeight);
-			game::RenderSystem::Update(mRegistry, *mSpriteBatch, aspect, alpha);
-			game::DebugRenderSystem::Update(mRegistry, *mShapeRenderer, aspect);
-
-			
+			game::RenderSystem::Update(mRegistry, *mSpriteBatch, alpha);
+			game::DebugRenderSystem::Update(mRegistry, *mShapeRenderer);
 		}
 	};
 }

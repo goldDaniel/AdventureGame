@@ -270,75 +270,58 @@ namespace dg3d
 			}
 		}
 
-		namespace CameraSystem
+		namespace CameraFollowSystem
 		{
-			void Update(entt::registry& registry, float dt, const core::Input& input)
+			void Update(entt::registry& registry, float dt)
 			{
-				auto view = registry.view<CameraComponent>();
-				view.each([&dt, &input](auto& cam)
+				glm::vec2 position{ 0,0 };
+				registry.view<const PositionComponent, CameraTargetComponent>().each([&dt, &position](const auto& pos, auto& target)
 				{
-					if (input.IsKeyDown(SDLK_j))
-					{
-						cam.position.x -= 2 * dt;
-					}
-					if (input.IsKeyDown(SDLK_l))
-					{
-						cam.position.x += 2 * dt;
-					}
-					if (input.IsKeyDown(SDLK_k))
-					{
-						cam.position.y -= 2 * dt;
-					}
-					if (input.IsKeyDown(SDLK_i))
-					{
-						cam.position.y += 2 * dt;
-					}
-
-					if (input.IsKeyDown(SDLK_EQUALS))
-					{
-						cam.zoom += 0.25f * dt;
-					}
-					if (input.IsKeyDown(SDLK_MINUS))
-					{
-						cam.zoom -= 0.25f * dt;
-					}
-				});
-			}
-
-			glm::mat4 GetProjectionMatrix(float aspect)
-			{
-				auto proj = glm::perspective(65.0f, aspect, 0.001f, 10.0f);
-				return proj;
-			}
-
-			glm::mat4 GetViewMatrix(entt::registry& registry)
-			{
-				glm::mat4 result(1.0f);
-
-				auto view = registry.view<CameraComponent>();
-				view.each([&result](const auto& cam)
-				{
-					result = glm::lookAt(glm::vec3{ cam.position, cam.zoom }, { cam.position, 0 }, { 0,1,0 });
+					target.position = glm::mix(target.position, pos.pos, 2.f * dt);
+					position = target.position;
 				});
 
-				return result;
+				registry.view<CameraComponent>().each([&position](auto& cam)
+				{
+					cam.position = position;
+				});
+			}
+		}
+
+		namespace AnimationSystem
+		{
+			void Update(entt::registry& registry, float dt)
+			{
+				auto view = registry.view<AnimationComponent>();
+				view.each([&registry, &dt](auto entity, auto& anim)
+				{
+					anim.animation.Update(dt);
+					if (auto renderable = registry.try_get<RenderableComponent>(entity))
+					{
+						renderable->texture = anim.animation.GetCurrentFrame();
+					}
+				});
 			}
 		}
 
 		namespace RenderSystem
 		{ 
-			void Update(entt::registry& registry, graphics::SpriteBatch& sb, float aspect, float alpha)
+			void Update(entt::registry& registry, graphics::SpriteBatch& sb, float alpha)
 			{
 				static std::unordered_map<entt::entity, glm::vec2> previousPos;
 				static std::vector<entt::entity> toKeep;
 
-				auto proj = CameraSystem::GetProjectionMatrix(aspect);
-				auto viewMat = CameraSystem::GetViewMatrix(registry);
-
+				glm::mat4 proj(1.0f);
+				glm::mat4 view(1.0f);
+				registry.view<CameraComponent>().each([&proj, &view](const auto& camera)
+				{
+					proj = camera.proj;
+					view = glm::lookAt(glm::vec3{ camera.position, camera.zoom }, { camera.position, 0 }, { 0,1,0 });
+				});
 				
-				auto view = registry.view<const PositionComponent, const RenderableComponent>();
-				sb.Begin(proj, viewMat);
-				view.each([&alpha, &sb](auto entity, const auto& position, const auto& renderable)
+
+				sb.Begin(proj, view);
+				registry.view<const PositionComponent, const RenderableComponent>().each([&alpha, &sb](auto entity, const auto& position, const auto& renderable)
 				{
 					glm::vec2 renderPos = position.pos;
 					if(previousPos.find(entity) != previousPos.end())
@@ -371,13 +354,17 @@ namespace dg3d
 
 		namespace DebugRenderSystem
 		{
-			void Update(entt::registry& registry, graphics::ShapeRenderer& s, float aspect)
+			void Update(entt::registry& registry, graphics::ShapeRenderer& s)
 			{
+				CameraComponent cam;
+				registry.view<const CameraComponent>().each([&cam](const auto& camera)
+					{
+						cam = camera;
+					});
+				auto proj = cam.proj;
+				auto viewMat = glm::lookAt(glm::vec3{ cam.position, cam.zoom }, { cam.position, 0 }, { 0,1,0 });
+				
 				auto view = registry.view<const PositionComponent, const DebugRenderableComponent>();
-
-				auto proj = CameraSystem::GetProjectionMatrix(aspect);
-				auto viewMat = CameraSystem::GetViewMatrix(registry);
-
 				s.Begin(proj, viewMat);
 				view.each([&s](const auto& position, const auto& renderable)
 				{

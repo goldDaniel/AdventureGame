@@ -48,11 +48,22 @@ namespace dg3d
 	{
 		glm::vec2 velocity{ 0,0 };
 	};
+	
+	struct CameraTargetComponent
+	{
+		glm::vec2 position;
+	};
 
 	struct CameraComponent
 	{
-		glm::vec2 position;
+		glm::mat4 proj = glm::mat4(1.0f);
+		glm::vec2 position{ 0, 0 };
 		float zoom = 3;
+	};
+
+	struct AnimationComponent
+	{
+		graphics::Animation animation;
 	};
 
 	struct RenderableComponent

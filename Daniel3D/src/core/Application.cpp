@@ -64,10 +64,13 @@ Application::Application(const std::string& title, int width, int height)
     , mRunning(false)
 {
     InitializeWindow(title, width, height);
-    input = std::make_unique<Input>([this]() 
-    { 
+    input = std::make_unique<Input>(
+    [this]() { 
         mRunning = false; 
-    });
+    },
+	[this](int w, int h) {
+        OnResize(w, h);
+	});
 }
 
 Application::~Application()
@@ -109,10 +112,10 @@ void Application::Run()
             mTime += step;
         }
 
-        const float alpha = mAccumulator / step;
+        const float a = mAccumulator / step;
 
         SDL_GetWindowSize(mWindow, &mScreenWidth, &mScreenHeight);
-        Render(alpha);
+        Render(a);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

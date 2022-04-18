@@ -13,10 +13,13 @@
 
 #include <core/Application.h>
 #include <core/Input.h>
+
+#include <graphics/Animation.h>
 #include <graphics/SpriteBatch.h>
 #include <graphics/ShapeRenderer.h>
 #include <graphics/Texture.h>
 #include <graphics/TextureRegion.h>
+
 
 #include <algorithm>
 #include <vector>

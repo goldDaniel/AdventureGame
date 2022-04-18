@@ -15,29 +15,30 @@ namespace dg3d
         class Input
         {
         public:
-            Input(const std::function<void()> functor)
+            Input(const std::function<void()> quitCallback, const std::function<void(int, int)> resizeCallback)
+                : mQuitCallback(quitCallback)
+                , mResizeCallback(resizeCallback)
             {
-                quit_callback = functor;
             }
 
             bool IsKeyDown(SDL_KeyCode code) const
             {
-                if (key_down.find(code) != key_down.end())
+                if (mKeyDown.find(code) != mKeyDown.end())
                 {
-                    return key_down.at(code);
+                    return mKeyDown.at(code);
                 }
                 return false;
             }
 
             bool IsButtonDown(int button) const
             {
-                return button_down.at(button);
+                return mButtonDown.at(button);
             }
 
             //relative to top-left
             const glm::vec2 GetMousePos() const
             {
-                return { mouse_x, mouse_y };
+                return { mMouseX, mMouseY };
             }
 
             void Update()
@@ -49,27 +50,32 @@ namespace dg3d
 
                     switch (event.type)
                     {
+                    case SDL_WINDOWEVENT_RESIZED:
+                    case SDL_WINDOWEVENT_SIZE_CHANGED:
+						mResizeCallback(event.window.data1, event.window.data2);
+                        break;
+
                     case SDL_QUIT:
-                        quit_callback();
+                        mQuitCallback();
                         break;
 
                     case SDL_KEYDOWN:
-                        key_down[event.key.keysym.sym] = true;
+                        mKeyDown[event.key.keysym.sym] = true;
                         break;
                     case SDL_KEYUP:
-                        key_down[event.key.keysym.sym] = false;
+                        mKeyDown[event.key.keysym.sym] = false;
                         break;
 
                     case SDL_MOUSEMOTION:
-                        SDL_GetGlobalMouseState(&mouse_x, &mouse_y);
+                        SDL_GetGlobalMouseState(&mMouseX, &mMouseY);
                         break;
 
                     case SDL_MOUSEBUTTONDOWN:
-                        button_down[event.button.button] = true;
+                        mButtonDown[event.button.button] = true;
                         break;
 
                     case SDL_MOUSEBUTTONUP:
-                        button_down[event.button.button] = false;
+                        mButtonDown[event.button.button] = false;
                         break;
                     }
                 }
@@ -77,14 +83,15 @@ namespace dg3d
 
         private:
 
-            int mouse_x;
-            int mouse_y;
+            int mMouseX;
+            int mMouseY;
 
-            std::function<void()> quit_callback;
+            std::function<void()> mQuitCallback;
+            std::function<void(int, int)> mResizeCallback;
 
-            std::unordered_map<int, bool> button_down;
+            std::unordered_map<int, bool> mButtonDown;
 
-            std::unordered_map<SDL_Keycode, bool> key_down;
+            std::unordered_map<SDL_Keycode, bool> mKeyDown;
         };
 	}
 }

@@ -40,6 +40,8 @@ namespace dg3d
 			virtual void Update(float delta) = 0;
 			virtual void Render(float alpha) = 0;
 
+			virtual void OnResize(int width, int height) {}
+
 		private:
 			void InitializeWindow(const std::string& title, int width, int height);
 		};

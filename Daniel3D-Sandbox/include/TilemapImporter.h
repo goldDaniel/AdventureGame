@@ -14,7 +14,7 @@ namespace dg3d
 			{
 				std::unordered_map<glm::ivec2, entt::entity> entities;
 
-				int numLines = 8;// must be equal to (number of lines in string - 1)
+				int numLines = 12;// must be equal to (number of lines in string - 1)
 				std::string map =
 					"................................................x\n"
 					"................................................x\n"
@@ -56,19 +56,49 @@ namespace dg3d
 							registry.emplace<VelocityComponent>(blob, glm::vec2{ 0, 0 });
 							registry.emplace<GravityComponent>(blob);
 							registry.emplace<TilemapColliderComponent>(blob);
-							registry.emplace<RenderableComponent>(blob, graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/blob2.png")));
+
+
+							std::vector<graphics::TextureRegion> frames =
+							{
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/blob1.png")),
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/blob2.png")),
+							};
+
+							auto anim = graphics::Animation(frames, 0.5f, graphics::PlayMode::Loop);
+
+							registry.emplace<AnimationComponent>(blob, anim);
+							registry.emplace<RenderableComponent>(blob, anim.GetCurrentFrame());
 						}
 						if (line[i] == 'f')
 						{
 							auto fire = registry.create();
 							registry.emplace<PositionComponent>(fire, pos);
-							registry.emplace<RenderableComponent>(fire, graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/fire1.png")));
+
+							std::vector<graphics::TextureRegion> frames = 
+							{
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/fire1.png")),
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/fire2.png")),
+							};
+
+							auto anim = graphics::Animation(frames, 0.5f, graphics::PlayMode::Loop);
+
+							registry.emplace<AnimationComponent>(fire, anim);
+							registry.emplace<RenderableComponent>(fire, anim.GetCurrentFrame());
 						}
 						if (line[i] == 'c')
 						{
 							auto chest = registry.create();
 							registry.emplace<PositionComponent>(chest, pos);
-							registry.emplace<RenderableComponent>(chest, graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/chest1.png")));
+
+							std::vector<graphics::TextureRegion> frames =
+							{
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/chest1.png")),
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/chest2.png")),
+							};
+
+							auto anim = graphics::Animation(frames, 0.5f, graphics::PlayMode::Loop);
+							registry.emplace<AnimationComponent>(chest, anim);
+							registry.emplace<RenderableComponent>(chest, anim.GetCurrentFrame());
 						}
 						if (line[i] == 'd')
 						{
@@ -79,11 +109,13 @@ namespace dg3d
 								SDLK_d,
 								SDLK_w,
 							};
+
 							registry.emplace<InputConfigComponent>(daniel, config);
-							registry.emplace<PositionComponent>(daniel, glm::vec2{ 0, 0 });
+							registry.emplace<PositionComponent>(daniel, pos);
 							registry.emplace<VelocityComponent>(daniel, glm::vec2{ 0, 0 });
 							registry.emplace<JumpComponent>(daniel);
 							registry.emplace<GravityComponent>(daniel);
+							registry.emplace<CameraTargetComponent>(daniel);
 							registry.emplace<TilemapColliderComponent>(daniel);
 							registry.emplace<RenderableComponent>(daniel, graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/daniel.png")));
 						}
@@ -97,7 +129,7 @@ namespace dg3d
 								SDLK_UP,
 							};
 							registry.emplace<InputConfigComponent>(kamilah, config);
-							registry.emplace<PositionComponent>(kamilah, glm::vec2{ 0, 0 });
+							registry.emplace<PositionComponent>(kamilah, pos );
 							registry.emplace<VelocityComponent>(kamilah, glm::vec2{ 0, 0 });
 							registry.emplace<GravityComponent>(kamilah);
 							registry.emplace<JumpComponent>(kamilah);
