@@ -103,6 +103,9 @@ void Application::Run()
         ImGui_ImplSDL2_NewFrame(mWindow);
         ImGui::NewFrame();
 
+        SDL_GetWindowSize(mWindow, &mScreenWidth, &mScreenHeight);
+
+
         while (mAccumulator >= step)
         {
             input->Update();
@@ -113,8 +116,6 @@ void Application::Run()
         }
 
         const float a = mAccumulator / step;
-
-        SDL_GetWindowSize(mWindow, &mScreenWidth, &mScreenHeight);
         Render(a);
 
         ImGui::Render();

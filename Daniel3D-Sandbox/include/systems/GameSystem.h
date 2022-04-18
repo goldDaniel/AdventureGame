@@ -253,7 +253,6 @@ namespace dg3d
 					pos.pos.y += vel.velocity.y * dt;
 				});
 				game::TilemapCollisionSystem::Update(dt, registry, false);
-					
 			}
 		}
 
@@ -309,7 +308,7 @@ namespace dg3d
 			void Update(entt::registry& registry, graphics::SpriteBatch& sb, float alpha)
 			{
 				static std::unordered_map<entt::entity, glm::vec2> previousPos;
-				static std::vector<entt::entity> toKeep;
+				std::vector<entt::entity> toKeep;
 
 				glm::mat4 proj(1.0f);
 				glm::mat4 view(1.0f);
@@ -321,13 +320,13 @@ namespace dg3d
 				
 
 				sb.Begin(proj, view);
-				registry.view<const PositionComponent, const RenderableComponent>().each([&alpha, &sb](auto entity, const auto& position, const auto& renderable)
+				registry.view<const PositionComponent, const RenderableComponent>().each([&alpha, &sb, &toKeep](auto entity, const auto& position, const auto& renderable)
 				{
-					glm::vec2 renderPos = position.pos;
+					glm::vec2 renderPos{ 0,0 };
 					if(previousPos.find(entity) != previousPos.end())
 					{
 						glm::vec2 prev = previousPos[entity];
-						renderPos = renderPos * alpha + prev * (1.0f - alpha);
+						renderPos = position.pos * alpha + prev * (1.0f - alpha);
 					}
 					toKeep.push_back(entity);
 
@@ -339,7 +338,7 @@ namespace dg3d
 						width = -width;
 					}
 
-					sb.Draw(&renderable.texture, position.pos.x, position.pos.y, width, renderable.height);
+					sb.Draw(&renderable.texture, renderPos.x, renderPos.y, width, renderable.height);
 				});
 				sb.End();
 
@@ -348,7 +347,6 @@ namespace dg3d
 				{
 					previousPos[entity] = registry.get<PositionComponent>(entity).pos;
 				}
-				toKeep.clear();
 			}
 		}
 
