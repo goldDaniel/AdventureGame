@@ -1,7 +1,5 @@
 #include "Common.h"
 
-#include "systems/GameSystem.h"
-
 #include "TilemapImporter.h"
 #include <imgui/imgui.h>
 
@@ -13,6 +11,10 @@
 #include "systems/CameraFollowSystem.h"
 #include "systems/AnimationSystem.h"
 
+#include "systems/BackgroundRenderSystem.h"
+#include "systems/RenderSystem.h"
+#include "systems/DebugRenderSystem.h"
+
 namespace dg3d
 {
 	class SampleApplication : public core::Application
@@ -23,8 +25,9 @@ namespace dg3d
 
 		entt::registry mRegistry;
 
-		std::vector<std::unique_ptr<core::GameSystem>> mSystems;
+		std::vector<std::unique_ptr<core::GameSystem>> mGameSystems;
 
+		std::vector<std::unique_ptr<core::GameSystem>> mRenderSystems;
 
 
 	public:
@@ -48,6 +51,10 @@ namespace dg3d
 			AddGameSystem<game::DirectionSystem>();
 			AddGameSystem<game::CameraFollowSystem>();
 			AddGameSystem<game::AnimationSystem>();
+
+			AddRenderSystem<game::BackgroundRenderSystem>(*mRenderer, *mSpriteBatch, mScreenWidth, mScreenHeight);
+			AddRenderSystem<game::RenderSystem>(*mSpriteBatch);
+			AddRenderSystem<game::DebugRenderSystem>(*mShapeRenderer);
 		}
 
 		virtual ~SampleApplication()
@@ -59,7 +66,7 @@ namespace dg3d
 
 		virtual void Update(float dt) override
 		{
-			for (auto&& system : mSystems)
+			for (auto& system : mGameSystems)
 			{
 				system->Update(dt);
 			}
@@ -67,40 +74,33 @@ namespace dg3d
 
 		virtual void Render(float alpha) override
 		{
-			float aspect = static_cast<float>(mScreenWidth) / mScreenHeight;
-			mRegistry.view<CameraComponent>().each([aspect](auto& camera)
-			{
-				auto proj = glm::perspective(65.0f, aspect, 0.001f, 10.f);
-				camera.proj = proj;
-			});
 			mRenderer->UpdateViewport(mScreenWidth, mScreenHeight);
 			mRenderer->Clear();
-		
-			//background 
+
+			for (auto& system : mRenderSystems)
 			{
-				auto bgTex = mRenderer->CreateTexture2D("assets/textures/background.png");
-				auto proj = glm::perspective(65.0f, aspect, 0.001f, 10.f);
-				auto view = glm::lookAt(glm::vec3{ 0.f, 0.f, 2.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f });
-
-
-				float scale = bgTex->mWidth / static_cast<float>(bgTex->mHeight);
-				float height = 8.f;
-				float width = height * scale;
-
-				mSpriteBatch->Begin(proj, view);
-				mSpriteBatch->Draw(bgTex, 0.0f, 0.f, width, height);
-				mSpriteBatch->End();
+				system->Update(alpha);
 			}
-
-			game::RenderSystem::Update(mRegistry, *mSpriteBatch, alpha);
-			game::DebugRenderSystem::Update(mRegistry, *mShapeRenderer);
 		}
+
 	private:
 
-		template<typename SystemType, class... Dependencies>
+		template<typename SystemType, typename... Dependencies>
 		void AddGameSystem(Dependencies&&... deps)
 		{
-			mSystems.push_back(std::make_unique<SystemType>(mRegistry, deps...));
+			AddSystem<SystemType>(mGameSystems, deps...);
+		}
+
+		template<typename SystemType, typename... Dependencies>
+		void AddRenderSystem(Dependencies&&... deps)
+		{
+			AddSystem<SystemType>(mRenderSystems, deps...);
+		}
+
+		template<typename SystemType, typename... Dependencies>
+		void AddSystem(std::vector< std::unique_ptr<core::GameSystem>>& systems, Dependencies&&... deps)
+		{
+			systems.push_back(std::make_unique<SystemType>(mRegistry, deps...));
 		}
 	};
 }

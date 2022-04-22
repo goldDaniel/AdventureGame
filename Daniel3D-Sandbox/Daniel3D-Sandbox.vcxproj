@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="include\systems\BackgroundRenderSystem.h" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\systems\AnimationSystem.cpp" />
     <ClCompile Include="src\systems\CameraFollowSystem.cpp" />
@@ -151,6 +152,7 @@
     <ClCompile Include="src\systems\InputSystem.cpp" />
     <ClCompile Include="src\systems\JumpSystem.cpp" />
     <ClCompile Include="src\systems\MovementSystem.cpp" />
+    <ClCompile Include="src\systems\RenderSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Common.h" />
@@ -158,12 +160,13 @@
     <ClInclude Include="include\SampleApplication.h" />
     <ClInclude Include="include\systems\AnimationSystem.h" />
     <ClInclude Include="include\systems\CameraFollowSystem.h" />
+    <ClInclude Include="include\systems\DebugRenderSystem.h" />
     <ClInclude Include="include\systems\DirectionSystem.h" />
-    <ClInclude Include="include\systems\GameSystem.h" />
     <ClInclude Include="include\systems\GravitySystem.h" />
     <ClInclude Include="include\systems\InputSystem.h" />
     <ClInclude Include="include\systems\JumpSystem.h" />
     <ClInclude Include="include\systems\MovementSystem.h" />
+    <ClInclude Include="include\systems\RenderSystem.h" />
     <ClInclude Include="include\TilemapImporter.h" />
   </ItemGroup>
   <ItemGroup>

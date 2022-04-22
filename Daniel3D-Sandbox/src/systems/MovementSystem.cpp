@@ -2,25 +2,24 @@
 
 #include "Components.h"
 
+using namespace dg3d;
 using namespace dg3d::game;
 
-namespace dg3d
+enum class CollisionSide
 {
-	enum class CollisionSide
-	{
-		INVALID,
+	INVALID,
 
-		Left,
-		Right,
-		Top,
-		Bottom
-	};
+	Left,
+	Right,
+	Top,
+	Bottom
+};
 
-	static CollisionSide getCollisionSide(const glm::vec4& r0, const glm::vec4& r1);
-	static void DoTilemapCollisions(entt::registry& registry, bool horizontal);
-	static bool CheckForTilemapCollisions(const entt::entity& entity, PositionComponent& entityPos, VelocityComponent& vel, const TilemapColliderComponent& collider, entt::registry& registry, bool horizontal);
-	static bool ResolveCollision(const entt::entity& entity, PositionComponent& entityPos, VelocityComponent& vel, const TilemapColliderComponent& collider, const glm::vec2& tileMin, const glm::vec2& tileMax, entt::registry& registry, bool horizontal);
-}
+static CollisionSide getCollisionSide(const glm::vec4& r0, const glm::vec4& r1);
+static void DoTilemapCollisions(entt::registry& registry, bool horizontal);
+static bool CheckForTilemapCollisions(const entt::entity& entity, PositionComponent& entityPos, VelocityComponent& vel, const TilemapColliderComponent& collider, entt::registry& registry, bool horizontal);
+static bool ResolveCollision(const entt::entity& entity, PositionComponent& entityPos, VelocityComponent& vel, const TilemapColliderComponent& collider, const glm::vec2& tileMin, const glm::vec2& tileMax, entt::registry& registry, bool horizontal);
+
 
 MovementSystem::MovementSystem(entt::registry& registry)
 	: core::GameSystem(registry)
@@ -30,21 +29,21 @@ MovementSystem::MovementSystem(entt::registry& registry)
 void MovementSystem::Update(float dt)
 {
 	mRegistry.view<PositionComponent, const VelocityComponent>().each([dt](auto& pos, const auto& vel)
-	{
-		pos.pos.x += vel.velocity.x * dt;
-	});
+		{
+			pos.pos.x += vel.velocity.x * dt;
+		});
 	DoTilemapCollisions(mRegistry, true);
 
 	mRegistry.view<PositionComponent, const VelocityComponent>().each([dt](auto& pos, const auto& vel)
-	{
-		pos.pos.y += vel.velocity.y * dt;
-		
-	});
+		{
+			pos.pos.y += vel.velocity.y * dt;
+
+		});
 	DoTilemapCollisions(mRegistry, false);
 }
 
 
-void dg3d::DoTilemapCollisions(entt::registry& registry, bool horizontal)
+void DoTilemapCollisions(entt::registry& registry, bool horizontal)
 {
 	registry.view<PositionComponent, VelocityComponent, const TilemapColliderComponent>().each([&registry, horizontal](auto entity, auto& pos, auto& vel, const auto& collider)
 	{
@@ -61,7 +60,7 @@ void dg3d::DoTilemapCollisions(entt::registry& registry, bool horizontal)
 	});
 }
 
-bool dg3d::CheckForTilemapCollisions(const entt::entity& entity, PositionComponent& entityPos, VelocityComponent& vel, const TilemapColliderComponent& collider, entt::registry& registry, bool horizontal)
+bool CheckForTilemapCollisions(const entt::entity& entity, PositionComponent& entityPos, VelocityComponent& vel, const TilemapColliderComponent& collider, entt::registry& registry, bool horizontal)
 {
 	//gather tiles in tilemap
 	std::vector<entt::entity> collisionTiles;
@@ -110,7 +109,7 @@ bool dg3d::CheckForTilemapCollisions(const entt::entity& entity, PositionCompone
 	return false;
 }
 
-bool dg3d::ResolveCollision(const entt::entity& entity, PositionComponent& entityPos, VelocityComponent& vel, const TilemapColliderComponent& collider, const glm::vec2& tileMin, const glm::vec2& tileMax, entt::registry& registry, bool horizontal)
+bool ResolveCollision(const entt::entity& entity, PositionComponent& entityPos, VelocityComponent& vel, const TilemapColliderComponent& collider, const glm::vec2& tileMin, const glm::vec2& tileMax, entt::registry& registry, bool horizontal)
 {
 	glm::vec2 diff = tileMax - tileMin;
 	glm::vec4 tileRect = { tileMin + diff / 2.0f, diff };
@@ -164,9 +163,9 @@ bool dg3d::ResolveCollision(const entt::entity& entity, PositionComponent& entit
 	return false;
 }
 
-dg3d::CollisionSide dg3d::getCollisionSide(const glm::vec4& r0, const glm::vec4& r1)
+CollisionSide getCollisionSide(const glm::vec4& r0, const glm::vec4& r1)
 {
-	dg3d::CollisionSide result = dg3d::CollisionSide::INVALID;
+	CollisionSide result = CollisionSide::INVALID;
 	//horizontal side
 	bool left = r0.x + r0.z / 2 < r1.x + r1.z / 2;
 	//vertical side
@@ -199,20 +198,20 @@ dg3d::CollisionSide dg3d::getCollisionSide(const glm::vec4& r0, const glm::vec4&
 	{
 		if (left)
 		{
-			result = dg3d::CollisionSide::Left;
+			result = CollisionSide::Left;
 		}
 		else
 		{
-			result = dg3d::CollisionSide::Right;
+			result = CollisionSide::Right;
 		}
 	}
 	else if (above)
 	{
-		result = dg3d::CollisionSide::Top;
+		result = CollisionSide::Top;
 	}
 	else
 	{
-		result = dg3d::CollisionSide::Bottom;
+		result = CollisionSide::Bottom;
 	}
 
 	return result;
