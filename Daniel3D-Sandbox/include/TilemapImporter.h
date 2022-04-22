@@ -18,7 +18,7 @@ namespace dg3d
 				std::string map =
 					"................................................x\n"
 					"................................................x\n"
-					".dk.............................................x\n"
+					".d..............................................x\n"
 					"....................xxxx........................x\n"
 					".......................x...b....................x\n"
 					".......................xxxxxxx..................x\n"
@@ -53,8 +53,9 @@ namespace dg3d
 						{
 							auto blob = registry.create();
 							registry.emplace<PositionComponent>(blob, pos);
-							registry.emplace<VelocityComponent>(blob, glm::vec2{ 0, 0 });
+							registry.emplace<VelocityComponent>(blob, glm::vec2{ -2, 0 });
 							registry.emplace<GravityComponent>(blob);
+							registry.emplace<SideToSideAIComponent>(blob);
 							registry.emplace<TilemapColliderComponent>(blob);
 
 

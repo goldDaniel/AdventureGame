@@ -23,6 +23,10 @@ namespace dg3d
 		float strength = 12.0f;
 	};
 
+	struct SideToSideAIComponent 
+	{
+	};
+
 	struct GravityComponent
 	{
 		float strength = -24.0f;
@@ -51,7 +55,7 @@ namespace dg3d
 	
 	struct CameraTargetComponent
 	{
-		glm::vec2 position;
+		glm::vec2 position{ 0,0 };
 	};
 
 	struct CameraComponent

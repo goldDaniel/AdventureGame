@@ -83,8 +83,8 @@ namespace dg3d
 
         private:
 
-            int mMouseX;
-            int mMouseY;
+            int mMouseX = 0;
+            int mMouseY = 0;
 
             std::function<void()> mQuitCallback;
             std::function<void(int, int)> mResizeCallback;

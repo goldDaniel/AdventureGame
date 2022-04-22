@@ -24,7 +24,7 @@ namespace dg3d
 			bool mRunning;
 
 		protected:
-			std::unique_ptr<Input> input;
+			std::unique_ptr<Input> mInput;
 
 			std::string mTitle;
 			int mScreenWidth;

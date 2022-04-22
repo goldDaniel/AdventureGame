@@ -64,7 +64,7 @@ Application::Application(const std::string& title, int width, int height)
     , mRunning(false)
 {
     InitializeWindow(title, width, height);
-    input = std::make_unique<Input>(
+    mInput = std::make_unique<Input>(
     [this]() { 
         mRunning = false; 
     },
@@ -105,10 +105,9 @@ void Application::Run()
 
         SDL_GetWindowSize(mWindow, &mScreenWidth, &mScreenHeight);
 
-
         while (mAccumulator >= step)
         {
-            input->Update();
+            mInput->Update();
             Update(step);
             
             mAccumulator -= step;
