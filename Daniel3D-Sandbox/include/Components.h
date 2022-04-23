@@ -65,9 +65,15 @@ namespace dg3d
 		float zoom = 3;
 	};
 
+	struct AnimationContainerComponent
+	{
+		std::shared_ptr<graphics::Animation> idle;
+		std::shared_ptr<graphics::Animation> walk;
+	};
+
 	struct AnimationComponent
 	{
-		graphics::Animation animation;
+		std::shared_ptr<graphics::Animation> animation;
 	};
 
 	struct RenderableComponent

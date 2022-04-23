@@ -20,7 +20,7 @@ namespace dg3d
 					"................................................x\n"
 					".d..............................................x\n"
 					"....................xxxx........................x\n"
-					".......................x...b....................x\n"
+					".......................x.....b.................x\n"
 					".......................xxxxxxx..................x\n"
 					"...............xxx.....x......x.................x\n"
 					".......................x.......x................x\n"
@@ -58,17 +58,14 @@ namespace dg3d
 							registry.emplace<SideToSideAIComponent>(blob);
 							registry.emplace<TilemapColliderComponent>(blob);
 
-
 							std::vector<graphics::TextureRegion> frames =
 							{
 								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/blob1.png")),
 								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/blob2.png")),
 							};
-
-							auto anim = graphics::Animation(frames, 0.5f, graphics::PlayMode::Loop);
-
+							auto anim = std::make_shared<graphics::Animation>(frames, 0.5f, graphics::PlayMode::Loop);
 							registry.emplace<AnimationComponent>(blob, anim);
-							registry.emplace<RenderableComponent>(blob, anim.GetCurrentFrame());
+							registry.emplace<RenderableComponent>(blob, anim->GetCurrentFrame());
 						}
 						if (line[i] == 'f')
 						{
@@ -81,10 +78,10 @@ namespace dg3d
 								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/fire2.png")),
 							};
 
-							auto anim = graphics::Animation(frames, 0.5f, graphics::PlayMode::Loop);
+							auto anim = std::make_shared<graphics::Animation>(frames, 0.5f, graphics::PlayMode::Loop);
 
 							registry.emplace<AnimationComponent>(fire, anim);
-							registry.emplace<RenderableComponent>(fire, anim.GetCurrentFrame());
+							registry.emplace<RenderableComponent>(fire, anim->GetCurrentFrame());
 						}
 						if (line[i] == 'c')
 						{
@@ -97,9 +94,9 @@ namespace dg3d
 								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/chest2.png")),
 							};
 
-							auto anim = graphics::Animation(frames, 0.5f, graphics::PlayMode::Loop);
+							auto anim = std::make_shared<graphics::Animation>(frames, 0.5f, graphics::PlayMode::Loop);
 							registry.emplace<AnimationComponent>(chest, anim);
-							registry.emplace<RenderableComponent>(chest, anim.GetCurrentFrame());
+							registry.emplace<RenderableComponent>(chest, anim->GetCurrentFrame());
 						}
 						if (line[i] == 'd')
 						{
@@ -118,7 +115,25 @@ namespace dg3d
 							registry.emplace<GravityComponent>(daniel);
 							registry.emplace<CameraTargetComponent>(daniel);
 							registry.emplace<TilemapColliderComponent>(daniel);
-							registry.emplace<RenderableComponent>(daniel, graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/daniel.png")));
+
+							std::vector<graphics::TextureRegion> idleFrames =
+							{
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/daniel.png")),
+							};
+							auto idle = std::make_shared<graphics::Animation>(idleFrames, 0.5f, graphics::PlayMode::Loop);
+
+							std::vector<graphics::TextureRegion> walkFrames =
+							{
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/daniel_walk1.png")),
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/daniel_walk2.png")),
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/daniel_walk3.png")),
+								graphics::TextureRegion(renderer.CreateTexture2D("assets/textures/daniel_walk4.png")),
+							};
+							auto walk = std::make_shared<graphics::Animation>(walkFrames, 0.75f, graphics::PlayMode::Loop);
+
+							auto& container = registry.emplace<AnimationContainerComponent>(daniel, idle, walk);
+							auto& anim = registry.emplace<AnimationComponent>(daniel, container.idle);
+							registry.emplace<RenderableComponent>(daniel, anim.animation->GetCurrentFrame());
 						}
 						if (line[i] == 'k')
 						{

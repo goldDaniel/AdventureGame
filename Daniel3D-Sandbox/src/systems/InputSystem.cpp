@@ -12,7 +12,7 @@ InputSystem::InputSystem(entt::registry& registry, const core::Input& input)
 
 void InputSystem::Update(float dt)
 {
-	mRegistry.view<const InputConfigComponent, VelocityComponent>().each([this](const auto& config, auto& vel)
+	mRegistry.view<const InputConfigComponent, VelocityComponent>().each([this](auto entity, const auto& config, auto& vel)
 	{
 		vel.velocity.x = 0;
 		float speed = 4;
@@ -23,6 +23,23 @@ void InputSystem::Update(float dt)
 		if (mInput.IsKeyDown(config.right))
 		{
 			vel.velocity.x += speed;
+			
+		}
+
+
+		if (mRegistry.all_of<AnimationContainerComponent, AnimationComponent>(entity))
+		{
+			auto& container = mRegistry.get<AnimationContainerComponent>(entity);
+			auto& anim = mRegistry.get<AnimationComponent>(entity);
+
+			if (vel.velocity.x == 0)
+			{
+				anim.animation = container.idle;
+			}
+			else
+			{
+				anim.animation = container.walk;
+			}
 		}
 	});
 }

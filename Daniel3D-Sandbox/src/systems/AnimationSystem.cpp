@@ -13,10 +13,10 @@ void AnimationSystem::Update(float dt)
 {
 	mRegistry.view<AnimationComponent>().each([this, &dt](auto entity, auto& anim)
 	{
-		anim.animation.Update(dt);
+		anim.animation->Update(dt);
 		if (auto renderable = mRegistry.try_get<RenderableComponent>(entity))
 		{
-			renderable->texture = anim.animation.GetCurrentFrame();
+			renderable->texture = anim.animation->GetCurrentFrame();
 		}
 	});
 }

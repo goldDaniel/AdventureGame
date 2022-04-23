@@ -30,7 +30,7 @@ namespace dg3d
 				: mFrames(frames)
 				, mAnimationTime(animationTime)
 				, mCurrentTime(0)
-				, mPlayMode(mode)
+				, mPlayMode(mode)	
 			{
 			}
 
@@ -58,31 +58,20 @@ namespace dg3d
 			{
 				float percent = mCurrentTime / mAnimationTime;
 				
-				if (mPlayMode == PlayMode::ReverseLoop ||
-					mPlayMode == PlayMode::Loop)
-				{
-					while (percent >= 1.0f)
-					{
-						percent -= 1.0f;
-					}
-				}
-				
-				if (mPlayMode == PlayMode::Normal ||
-					mPlayMode == PlayMode::Reverse)
-				{
-					if (percent > 1.0f)
-					{
-						percent = 1.0f;
-					}
-				}
-
 				if (mPlayMode == PlayMode::Reverse ||
-					mPlayMode == PlayMode::ReverseLoop)
+				mPlayMode == PlayMode::ReverseLoop)
 				{
 					percent = 1.0f - percent;
 				}
+				
+				//truncation ok
+				int percentIntegral = static_cast<int>(percent * 100);
+				int roundMultiple = 100 / mFrames.size();
 
-				const size_t index = static_cast<size_t>(glm::round(percent * (mFrames.size() - 1)));
+				int remainder = percentIntegral % roundMultiple;
+				float percentRounded = (percentIntegral + roundMultiple - remainder) / 100.0f;
+
+				size_t index = static_cast<size_t>(percentRounded * (mFrames.size() - 1));
 				return mFrames[index];
 			}
 		};
