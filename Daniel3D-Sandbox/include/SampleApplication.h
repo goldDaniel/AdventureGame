@@ -43,7 +43,6 @@ namespace dg3d
 			mRegistry.emplace<CameraComponent>(mRegistry.create());
 			game::tilemap::Create(mRegistry, *mRenderer);
 
-
 			AddGameSystem<game::InputSystem>(*mInput);
 			AddGameSystem<game::JumpSystem>(*mInput);
 			AddGameSystem<game::MovementSystem>();

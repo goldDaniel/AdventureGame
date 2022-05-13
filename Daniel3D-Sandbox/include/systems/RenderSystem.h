@@ -15,8 +15,6 @@ namespace dg3d
 
 		private:
 			graphics::SpriteBatch& mSpriteBatch;
-			
-			std::unordered_map<entt::entity, glm::vec2> mPrevPos;
 		};
 	}
 }
